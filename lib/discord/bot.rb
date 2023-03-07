@@ -1,8 +1,11 @@
 class Bot
   require 'twilio-ruby'
   require '../lib/discord/listener/voice_state_update.rb'
+  require 'json'
+
+  DATA = JSON.parse(File.read('../config/discord_config.json'))
   def initialize
-    @bot = Discordrb::Bot.new(token: ENV["PINGPOP_TOKEN"])
+    @bot = Discordrb::Bot.new(token: DATA["pingpop_token"])
     set_listeners
   end
 

@@ -3,12 +3,11 @@ module TwilioClient
   require 'twilio-ruby'
   require 'json'
 
-  DATA = JSON.parse(File.read('../config/config.json'))
+  DATA = JSON.parse(File.read('../config/twilio_config.json'))
 
-  CLIENT = Twilio::REST::Client.new(ENV['TWILIO_ACCOUNT_SID'], ENV['TWILIO_AUTH_TOKEN'])
+  CLIENT = Twilio::REST::Client.new(DATA['twilio_account_sid'], DATA['twilio_auth_token'])
 
   def self.send_messages(message)
-    from = DATA['twilio_number']
-    CLIENT.messages.create(from:, to: DATA['test_recipient'], body: message)
+    CLIENT.messages.create(from: DATA['twilio_number'], to: DATA['test_recipient'], body: message)
   end
 end
