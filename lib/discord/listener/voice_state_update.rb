@@ -24,15 +24,13 @@ module Discord
       end
 
       def message
-        text_message = if voice_join?
-                         "#{@event.user.username} \u{2705} joined the voice channel #{@event.channel.name}.\nThere are #{users.count} people in this channel. \n"
-                       elsif voice_leave?
-                         "#{@event.user.username} \u{274C} left the voice channel #{@event.old_channel.name}.\nThere are #{users.count} people in this channel. \n"
-                       end
-        users.each do |user|
-          text_message += "\u{2705} #{user}\n"
-        end
-        text_message
+        emoji = voice_join? ? "\u{2705}" : "\u{274C}"
+        action = voice_join? ? 'joined' : 'left'
+        channel = voice_join? ? @event.channel.name : @event.old_channel.name
+        user_count = "There are #{users.count} people in this channel.\n"
+
+        text_message = "#{@event.user.username} #{emoji} #{action} the voice channel #{channel}.\n\n#{user_count}"
+        text_message += users.map { |user| "\u{2705} #{user}\n" }.join('')
       end
 
       def voice_join?
