@@ -1,11 +1,15 @@
 class Bot
   require 'twilio-ruby'
-  require '../lib/discord/listener/voice_state_update.rb'
+  require '../lib/discord/listener/voice_state_update'
+  require '../lib/discord/listener/bot_command/addme'
   require 'json'
 
   DATA = JSON.parse(File.read('../config/discord_config.json'))
   def initialize
-    @bot = Discordrb::Bot.new(token: DATA["pingpop_token"])
+    @bot = Discordrb::Commands::CommandBot.new(
+      token: DATA['pingpop_token'],
+      prefix: '!'
+    )
     set_listeners
   end
 
@@ -18,6 +22,7 @@ class Bot
   def set_listeners
     set_ready_listener
     set_voice_update_listener
+    set_addme_listener
   end
 
   def set_ready_listener
@@ -31,4 +36,11 @@ class Bot
       Discord::Listener::VoiceStateUpdate.new(event).perform
     end
   end
+
+  def set_addme_listener
+    @bot.command(:addme) do |event|
+      Discord::Listener::BotCommand::AddMe.new(event).perform
+    end
+  end
 end
+
