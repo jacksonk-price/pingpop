@@ -5,31 +5,23 @@ module Discord
       class AddMe
         require File.join(File.dirname(__FILE__), '../../../../db/', 'db_setup.rb')
         require File.join(File.dirname(__FILE__), '../../../../models/', 'users.rb')
-        def initialize(event)
+        def initialize(event, user, phone_number)
           @event = event
-          @user = event.user
-          @message = event.message.content.split(' ')[1].to_s
+          @user = user
+          @phone_number = phone_number
         end
 
         def perform
-          if already_added?
-            @event.respond('You have already been added to the SMS list.')
-          elsif User.create(**args)
-            @event.respond('You have been added to the SMS list. Thank you.')
-          end
+          User.create(**args)
         end
 
         private
-
-        def already_added?
-          User.find_by(discord_id: @user.id)
-        end
 
         def args
           {
             discord_id: @user.id,
             display_name: @user.username,
-            phone_number: @message
+            phone_number: @phone_number
           }
         end
       end
