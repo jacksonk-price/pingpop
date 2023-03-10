@@ -1,8 +1,15 @@
 class Bot
-  require 'twilio-ruby'
-  require '../lib/discord/listener/voice_state_update'
-  require '../lib/discord/listener/bot_command/addme'
+  require_relative '../twilio_client'
+  require 'addme'
+  require 'removeme'
+  require 'validation'
+  require 'utils'
+  require 'join'
+  require 'leave'
   require 'json'
+
+  include Discord::Listener::BotCommand::Validation
+  include Discord::Listener::VoiceStateUpdate::Utils
 
   DATA = JSON.parse(File.read('../config/discord_config.json'))
   def initialize
@@ -23,6 +30,7 @@ class Bot
     set_ready_listener
     set_voice_update_listener
     set_addme_listener
+    set_removeme_listener
   end
 
   def set_ready_listener
@@ -33,13 +41,36 @@ class Bot
 
   def set_voice_update_listener
     @bot.voice_state_update do |event|
-      Discord::Listener::VoiceStateUpdate.new(event).perform
+      if voice_join?(event)
+        Discord::Listener::VoiceStateUpdate::Join.new(event).perform
+      elsif voice_leave?(event) && no_users?(event)
+        Discord::Listener::VoiceStateUpdate::Leave.new(event).perform
+      end
     end
   end
 
   def set_addme_listener
     @bot.command(:addme) do |event|
-      Discord::Listener::BotCommand::AddMe.new(event).perform
+      command_content = event.message.content.split(' ')[1].to_s
+      return event.respond("#{event.user.mention} Your command does not contain a valid phone number. Please put it in this format '+1xxxxxxxxxx'") unless valid_phone_number?(command_content)
+
+      if new_user?(event.user)
+        if Discord::Listener::BotCommand::AddMe.new(event, event.user, command_content).perform
+          event.respond("#{event.user.mention} You have been added to the messaging list.")
+        end
+      else
+        event.respond("#{event.user.mention} You are already active on the messaging list. Please use the '!changeme +1xxxxxxxxxx' command if you would like to update your number.")
+      end
+    end
+  end
+
+  def set_removeme_listener
+    @bot.command(:removeme) do |event|
+      if new_user?(event.user)
+        event.respond("#{event.user.mention} You are not currently added to the messaging list, so you cannot be removed.")
+      elsif Discord::Listener::BotCommand::RemoveMe.new(event, event.user).perform
+        event.respond("#{event.user.mention} You have been succesfully removed from the messaging list.")
+      end
     end
   end
 end
