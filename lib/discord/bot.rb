@@ -2,6 +2,7 @@ class Bot
   require_relative '../twilio_client'
   require 'addme'
   require 'removeme'
+  require 'changeme'
   require 'validation'
   require 'utils'
   require 'join'
@@ -31,6 +32,7 @@ class Bot
     set_voice_update_listener
     set_addme_listener
     set_removeme_listener
+    set_changeme_listener
   end
 
   def set_ready_listener
@@ -70,6 +72,19 @@ class Bot
         event.respond("#{event.user.mention} You are not currently added to the messaging list, so you cannot be removed.")
       elsif Discord::Listener::BotCommand::RemoveMe.new(event, event.user).perform
         event.respond("#{event.user.mention} You have been succesfully removed from the messaging list.")
+      end
+    end
+  end
+
+  def set_changeme_listener
+    @bot.command(:changeme) do |event|
+      command_content = event.message.content.split(' ')[1].to_s
+      return event.respond("#{event.user.mention} Your command does not contain a valid phone number. Please put it in this format '+1xxxxxxxxxx'") unless valid_phone_number?(command_content)
+
+      if new_user?(event.user)
+        event.respond("#{event.user.mention} You are not currently added to the messaging list, so your phone number cannot be changed.")
+      elsif Discord::Listener::BotCommand::ChangeMe.new(event, event.user, command_content)
+        event.respond("#{event.user.mention} Your number has been updated.")
       end
     end
   end
