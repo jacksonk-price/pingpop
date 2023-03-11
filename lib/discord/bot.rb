@@ -54,14 +54,14 @@ class Bot
   def set_addme_listener
     @bot.command(:addme) do |event|
       command_content = event.message.content.split(' ')[1].to_s
-      return event.respond("#{event.user.mention} Your command does not contain a valid phone number. Please put it in this format '+1xxxxxxxxxx'") unless valid_phone_number?(command_content)
+      return event.respond("#{event.user.mention} Your command does not contain a valid phone number. Please put it in this format 'xxxxxxxxxx'") unless valid_phone_number?(command_content)
 
       if new_user?(event.user)
         if Discord::Listener::BotCommand::AddMe.new(event, event.user, command_content).perform
           event.respond("#{event.user.mention} You have been added to the messaging list.")
         end
       else
-        event.respond("#{event.user.mention} You are already active on the messaging list. Please use the '!changeme +1xxxxxxxxxx' command if you would like to update your number.")
+        event.respond("#{event.user.mention} You are already active on the messaging list. Please use the '!changeme xxxxxxxxxx' command if you would like to update your number.")
       end
     end
   end
@@ -79,7 +79,7 @@ class Bot
   def set_changeme_listener
     @bot.command(:changeme) do |event|
       command_content = event.message.content.split(' ')[1].to_s
-      return event.respond("#{event.user.mention} Your command does not contain a valid phone number. Please put it in this format '+1xxxxxxxxxx'") unless valid_phone_number?(command_content)
+      return event.respond("#{event.user.mention} Your command does not contain a valid phone number. Please put it in this format 'xxxxxxxxxx'") unless valid_phone_number?(command_content)
 
       if new_user?(event.user)
         event.respond("#{event.user.mention} You are not currently added to the messaging list, so your phone number cannot be changed.")
