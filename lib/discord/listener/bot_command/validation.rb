@@ -4,7 +4,7 @@ module Discord
       # general validation module for botcommands
       module Validation
         def valid_phone_number?(message)
-          phone_regex = /^\+\d{11}$/
+          phone_regex = /^\d{10}$/
           true unless message.match(phone_regex).nil?
         end
 

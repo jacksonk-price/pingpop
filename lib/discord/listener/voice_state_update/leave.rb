@@ -9,13 +9,17 @@ module Discord
         end
 
         def perform
-          TwilioClient.send_messages(message)
+          TwilioClient.send_messages(phone_numbers, message)
         end
 
         private
 
         def users
           @event.old_channel.users.map(&:username)
+        end
+
+        def phone_numbers
+          User.all.map(&:phone_number)
         end
 
         def message
